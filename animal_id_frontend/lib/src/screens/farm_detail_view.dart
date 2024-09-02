@@ -48,11 +48,19 @@ class FarmDetailView extends StatelessWidget {
             onCowSelected: (cowId) {},
           ),
           SlurryTable(
-            slurrys: [Slurry(meldedatum: "", abgeber: "", aufnehmer: "", menge: "", art: "")],
+            slurrys: slurrys,
             onCowSelected: (e) {},
           ),
           FieldsTable(
-            fields: [Field(feldblock: "", schlagNr: "", schlagBezeichnung: "", teilschlag: "", groesse: "", kultur: "")],
+            fields: [
+              Field(
+                  feldblock: "",
+                  schlagNr: "",
+                  schlagBezeichnung: "",
+                  teilschlag: "",
+                  groesse: "",
+                  kultur: "")
+            ],
             onCowSelected: (cowId) {},
           ),
         ],
@@ -393,6 +401,92 @@ class Cow {
     this.departureDate,
   });
 }
+
+final List<Slurry> slurrys = [
+  Slurry(meldedatum: "", abgeber: "", aufnehmer: "", menge: "", art: ""),
+  Slurry(meldedatum: "", abgeber: "", aufnehmer: "", menge: "", art: ""),
+  Slurry(meldedatum: "", abgeber: "", aufnehmer: "", menge: "", art: ""),
+  Slurry(meldedatum: "", abgeber: "", aufnehmer: "", menge: "", art: ""),
+  Slurry(meldedatum: "", abgeber: "", aufnehmer: "", menge: "", art: ""),
+  Slurry(meldedatum: "", abgeber: "", aufnehmer: "", menge: "", art: ""),
+  Slurry(meldedatum: "", abgeber: "", aufnehmer: "", menge: "", art: ""),
+  Slurry(meldedatum: "", abgeber: "", aufnehmer: "", menge: "", art: ""),
+  Slurry(meldedatum: "", abgeber: "", aufnehmer: "", menge: "", art: ""),
+  Slurry(meldedatum: "", abgeber: "", aufnehmer: "", menge: "", art: ""),
+];
+
+final List<Field> fields = [
+  Field(
+      feldblock: "",
+      schlagNr: "",
+      schlagBezeichnung: "",
+      teilschlag: "",
+      groesse: "",
+      kultur: ""),
+  Field(
+      feldblock: "",
+      schlagNr: "",
+      schlagBezeichnung: "",
+      teilschlag: "",
+      groesse: "",
+      kultur: ""),
+  Field(
+      feldblock: "",
+      schlagNr: "",
+      schlagBezeichnung: "",
+      teilschlag: "",
+      groesse: "",
+      kultur: ""),
+  Field(
+      feldblock: "",
+      schlagNr: "",
+      schlagBezeichnung: "",
+      teilschlag: "",
+      groesse: "",
+      kultur: ""),
+  Field(
+      feldblock: "",
+      schlagNr: "",
+      schlagBezeichnung: "",
+      teilschlag: "",
+      groesse: "",
+      kultur: ""),
+  Field(
+      feldblock: "",
+      schlagNr: "",
+      schlagBezeichnung: "",
+      teilschlag: "",
+      groesse: "",
+      kultur: ""),
+  Field(
+      feldblock: "",
+      schlagNr: "",
+      schlagBezeichnung: "",
+      teilschlag: "",
+      groesse: "",
+      kultur: ""),
+  Field(
+      feldblock: "",
+      schlagNr: "",
+      schlagBezeichnung: "",
+      teilschlag: "",
+      groesse: "",
+      kultur: ""),
+  Field(
+      feldblock: "",
+      schlagNr: "",
+      schlagBezeichnung: "",
+      teilschlag: "",
+      groesse: "",
+      kultur: ""),
+  Field(
+      feldblock: "",
+      schlagNr: "",
+      schlagBezeichnung: "",
+      teilschlag: "",
+      groesse: "",
+      kultur: ""),
+];
 
 final List<Cow> cows = [
   Cow(
