@@ -27,57 +27,59 @@ class FarmDetailView extends StatelessWidget {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: BetriebCard(
-              betriebsName: "Musterhof",
-              betriebsId: "123456",
-              zertifizierungen: ["qs", "bio"],
-              adresse: "Musterstraße 1, 12345 Musterstadt",
-              betriebsspiegel: {
-                'Kühe': 120,
-                'Schafe': 80,
-                'Hühner': 200,
-              },
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: BetriebCard(
+                betriebsName: "Musterhof",
+                betriebsId: "123456",
+                zertifizierungen: ["qs", "bio"],
+                adresse: "Musterstraße 1, 12345 Musterstadt",
+                betriebsspiegel: {
+                  'Kühe': 120,
+                  'Schafe': 80,
+                  'Hühner': 200,
+                },
+              ),
             ),
-          ),
-          ExpansionPanelListExample(),
-
-/*
-          ExpansionPanelList(
-            expansionCallback: (int index, bool isExpanded) {
-
-            },
-            children: [
-              ExpansionPanel(
-                  headerBuilder: (context, isExpanded) {
-                    return Text("Body");
-                  },
-                  body: CowTable(
-                    cows: cows,
-                    onCowSelected: (cowId) {},
-                  )),
-              ExpansionPanel(
-                  headerBuilder: (context, isExpanded) {
-                    return Text("Body");
-                  },
-                  body: SlurryTable(
-                    slurrys: slurrys,
-                    onCowSelected: (e) {},
-                  )),
-              ExpansionPanel(
-                  headerBuilder: (context, isExpanded) {
-                    return Text("Body");
-                  },
-                  body: FieldsTable(
-                    fields: [ ],
-                    onCowSelected: (cowId) {},
-                  ))
-            ],
-          ),*/
-        ],
+            ExpansionPanelListExample(),
+        
+        /*
+            ExpansionPanelList(
+              expansionCallback: (int index, bool isExpanded) {
+        
+              },
+              children: [
+                ExpansionPanel(
+                    headerBuilder: (context, isExpanded) {
+                      return Text("Body");
+                    },
+                    body: CowTable(
+                      cows: cows,
+                      onCowSelected: (cowId) {},
+                    )),
+                ExpansionPanel(
+                    headerBuilder: (context, isExpanded) {
+                      return Text("Body");
+                    },
+                    body: SlurryTable(
+                      slurrys: slurrys,
+                      onCowSelected: (e) {},
+                    )),
+                ExpansionPanel(
+                    headerBuilder: (context, isExpanded) {
+                      return Text("Body");
+                    },
+                    body: FieldsTable(
+                      fields: [ ],
+                      onCowSelected: (cowId) {},
+                    ))
+              ],
+            ),*/
+          ],
+        ),
       ),
     );
   }
@@ -99,7 +101,12 @@ class Item {
 List<Item> generateItems(int numberOfItems) {
   return List<Item>.generate(numberOfItems, (int index) {
     return Item(
-      headerValue: 'Panel $index',
+      headerValue: switch (index) {
+        0 => "Tiere",
+        1 => "Meldeprogramm für Wirtschaftsdünger",
+        2 => "Flächenverzeichnis",
+        _ => "Bestandsregister"
+      },
       expandedValue: switch (index) {
         0 => CowTable(
             cows: cows,
@@ -110,7 +117,7 @@ List<Item> generateItems(int numberOfItems) {
             onSlurrySelected: (e) {},
           ),
         2 => FieldsTable(
-            fields: [],
+            fields: fields,
             onFiedSelected: (fieldId) {},
           ),
         _ => CowTable(
@@ -185,7 +192,7 @@ class SlurryTable extends StatelessWidget {
         DataColumn(label: Text('')),
         DataColumn(label: Text('Meldedatum')),
         DataColumn(label: Text('Abgeber')),
-        DataColumn(label: Text('Aufnehmer')),
+        DataColumn(label: Text('Melder')),
         DataColumn(label: Text('Menge')),
         DataColumn(label: Text('Art')),
       ],
@@ -205,7 +212,7 @@ class SlurryTable extends StatelessWidget {
               )),
               DataCell(Text(slurry.meldedatum)),
               DataCell(Text(slurry.abgeber)),
-              DataCell(Text(slurry.aufnehmer)),
+              DataCell(Text(slurry.melder)),
               DataCell(Text(slurry.menge)),
               DataCell(Text(slurry.art)),
             ],
@@ -447,14 +454,14 @@ class BetriebCard extends StatelessWidget {
 class Slurry {
   final String meldedatum;
   final String abgeber;
-  final String aufnehmer;
+  final String melder;
   final String menge;
   final String art;
 
   Slurry(
       {required this.meldedatum,
       required this.abgeber,
-      required this.aufnehmer,
+      required this.melder,
       required this.menge,
       required this.art});
 }
@@ -498,16 +505,16 @@ class Cow {
 }
 
 final List<Slurry> slurrys = [
-  Slurry(meldedatum: "03.08.2024", abgeber: "Güllehandel Nord", aufnehmer: "Musterhof", menge: "155", art: "Gärrest aus Biogasanlage"),
-  Slurry(meldedatum: "15.04.2024", abgeber: "Landwirt Karl-Heinz", aufnehmer: "Musterhof", menge: "50", art: "Hühnertrockenkot"),
-  Slurry(meldedatum: "20.05.2024", abgeber: "Bauer Rudolf", aufnehmer: "Musterhof", menge: "50", art: "Milchviehgülle"),
-  Slurry(meldedatum: "20.05.2024", abgeber: "Schweine GbR Schleswig", aufnehmer: "Musterhof", menge: "90", art: "Schweinegülle"),
-  Slurry(meldedatum: "20.05.2024", abgeber: "Landwirt Alfred", aufnehmer: "Landwirt Müller", menge: "500", art: "Gärrest aus Biogasanlage"),
-  Slurry(meldedatum: "21.05.2024", abgeber: "Kälberzucht Nordrhein", aufnehmer: "Musterhof", menge: "100", art: "Kälbergülle"),
-  Slurry(meldedatum: "30.08.2024", abgeber: "Kuhparadies Berlin", aufnehmer: "Landwirt Müller", menge: "50", art: "Milchviehgülle"),
-  Slurry(meldedatum: "30.08.2024", abgeber: "Bio-Puten Musterhof", aufnehmer: "Musterhof", menge: "234,50", art: "Putenmist"),
-  Slurry(meldedatum: "03.09.2024", abgeber: "Sabine Müller", aufnehmer: "Landwirt Müller", menge: "25", art: "Gärrest aus Biogasanlage"),
-  Slurry(meldedatum: "03.09.2024", abgeber: "Landwirtschaft GmbH", aufnehmer: "Musterhof", menge: "30", art: "Rindermist"),
+  Slurry(meldedatum: "03.08.2024", abgeber: "Güllehandel Nord", melder: "Musterhof", menge: "155", art: "Gärrest aus Biogasanlage"),
+  Slurry(meldedatum: "15.04.2024", abgeber: "Landwirt Karl-Heinz", melder: "Musterhof", menge: "50", art: "Hühnertrockenkot"),
+  Slurry(meldedatum: "20.05.2024", abgeber: "Bauer Rudolf", melder: "Musterhof", menge: "50", art: "Milchviehgülle"),
+  Slurry(meldedatum: "20.05.2024", abgeber: "Schweine GbR Schleswig", melder: "Musterhof", menge: "90", art: "Schweinegülle"),
+  Slurry(meldedatum: "20.05.2024", abgeber: "Landwirt Alfred", melder: "Landwirt Müller", menge: "500", art: "Gärrest aus Biogasanlage"),
+  Slurry(meldedatum: "21.05.2024", abgeber: "Kälberzucht Nordrhein", melder: "Musterhof", menge: "100", art: "Kälbergülle"),
+  Slurry(meldedatum: "30.08.2024", abgeber: "Kuhparadies Berlin", melder: "Landwirt Müller", menge: "50", art: "Milchviehgülle"),
+  Slurry(meldedatum: "30.08.2024", abgeber: "Bio-Puten Musterhof", melder: "Musterhof", menge: "234,50", art: "Putenmist"),
+  Slurry(meldedatum: "03.09.2024", abgeber: "Sabine Müller", melder: "Landwirt Müller", menge: "25", art: "Gärrest aus Biogasanlage"),
+  Slurry(meldedatum: "03.09.2024", abgeber: "Landwirtschaft GmbH", melder: "Musterhof", menge: "30", art: "Rindermist"),
 ];
 
 final List<Field> fields = [
@@ -981,7 +988,7 @@ class _AnimalFormState extends State<AnimalForm> {
                     print('Mehrling: $multipleBirth');
                   }
                 },
-                child: Text('Erfassen'),
+                child: cows.add(Cow(id: id, gender: gender, fatherId: fatherId, motherId: motherId, sbtOrRbt: sbtOrRbt, birthDate: birthDate)) Text('Erfassen'),
               ),
             ],
           ),
