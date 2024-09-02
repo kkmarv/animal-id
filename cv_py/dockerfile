@@ -1,0 +1,14 @@
+FROM unikrn/python-opencv
+
+
+RUN add-apt-repository ppa:alex-p/tesseract-ocr5
+RUN apt update
+RUN apt install tesseract-ocr
+
+WORKDIR /opt/app
+
+
+COPY ./requirements.txt .
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+

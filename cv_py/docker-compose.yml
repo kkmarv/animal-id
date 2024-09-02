@@ -1,0 +1,10 @@
+services:
+  python-opencv-hackathon:
+    #    privileged: true
+    build: .
+    command: python3 ./main.py
+    volumes: 
+     - ./server:/opt/app
+     - ./config:/etc/app/
+     - ./pipes:/tmp/app/pipes
+

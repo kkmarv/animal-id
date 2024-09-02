@@ -1,0 +1,46 @@
+registering callback
+running watcher
+running as watcher
+path is /tmp/app/pipes
+initial_state: ["k", "9"]
+dif called["j"]
+starting callback with path: /tmp/app/pipes/j
+running as worker
+finished first reading as worker
+trying to decode: {
+trying to decode: {"
+trying to decode: {"1
+trying to decode: {"1"
+trying to decode: {"1":
+trying to decode: {"1": 
+trying to decode: {"1": "
+trying to decode: {"1": "2
+trying to decode: {"1": "2"
+trying to decode: {"1": "2"}
+received cmd: {"1": "2"}
+dispatched
+registering callback
+running watcher
+running as watcher
+path is /tmp/app/pipes
+initial_state: ["k"]
+dif called["j"]
+starting callback with path: /tmp/app/pipes/j
+running as worker
+registering callback
+running watcher
+running as watcher
+path is /tmp/app/pipes
+initial_state: []
+dif called["k"]
+starting callback with path: /tmp/app/pipes/k
+running as worker
+finished first reading as worker
+received cmd: {"cmd": "shoot_image_and_search_barcode"}
+dispatched
+dif called["j"]
+starting callback with path: /tmp/app/pipes/j
+running as worker
+finished first reading as worker
+received cmd: {"cmd": "shoot_image_and_search_barcode"}
+dispatched
