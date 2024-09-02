@@ -43,39 +43,134 @@ class FarmDetailView extends StatelessWidget {
               },
             ),
           ),
-          CowTable(
-            cows: cows,
-            onCowSelected: (cowId) {},
-          ),
-          SlurryTable(
-            slurrys: slurrys,
-            onCowSelected: (e) {},
-          ),
-          FieldsTable(
-            fields: [
-              Field(
-                  feldblock: "",
-                  schlagNr: "",
-                  schlagBezeichnung: "",
-                  teilschlag: "",
-                  groesse: "",
-                  kultur: "")
+          ExpansionPanelListExample(),
+
+/*
+          ExpansionPanelList(
+            expansionCallback: (int index, bool isExpanded) {
+
+            },
+            children: [
+              ExpansionPanel(
+                  headerBuilder: (context, isExpanded) {
+                    return Text("Body");
+                  },
+                  body: CowTable(
+                    cows: cows,
+                    onCowSelected: (cowId) {},
+                  )),
+              ExpansionPanel(
+                  headerBuilder: (context, isExpanded) {
+                    return Text("Body");
+                  },
+                  body: SlurryTable(
+                    slurrys: slurrys,
+                    onCowSelected: (e) {},
+                  )),
+              ExpansionPanel(
+                  headerBuilder: (context, isExpanded) {
+                    return Text("Body");
+                  },
+                  body: FieldsTable(
+                    fields: [ ],
+                    onCowSelected: (cowId) {},
+                  ))
             ],
-            onCowSelected: (cowId) {},
-          ),
+          ),*/
         ],
       ),
     );
   }
 }
 
+// stores ExpansionPanel state information
+class Item {
+  Item({
+    required this.expandedValue,
+    required this.headerValue,
+    this.isExpanded = false,
+  });
+
+  Widget expandedValue;
+  String headerValue;
+  bool isExpanded;
+}
+
+List<Item> generateItems(int numberOfItems) {
+  return List<Item>.generate(numberOfItems, (int index) {
+    return Item(
+      headerValue: 'Panel $index',
+      expandedValue: switch (index) {
+        0 => CowTable(
+            cows: cows,
+            onCowSelected: (cowId) {},
+          ),
+        1 => SlurryTable(
+            slurrys: slurrys,
+            onSlurrySelected: (e) {},
+          ),
+        2 => FieldsTable(
+            fields: [],
+            onFiedSelected: (fieldId) {},
+          ),
+        _ => CowTable(
+            cows: cows,
+            onCowSelected: (cowId) {},
+          )
+      },
+    );
+  });
+}
+
+class ExpansionPanelListExample extends StatefulWidget {
+  const ExpansionPanelListExample({super.key});
+
+  @override
+  State<ExpansionPanelListExample> createState() =>
+      _ExpansionPanelListExampleState();
+}
+
+class _ExpansionPanelListExampleState extends State<ExpansionPanelListExample> {
+  final List<Item> _data = generateItems(3);
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Container(
+        child: _buildPanel(),
+      ),
+    );
+  }
+
+  Widget _buildPanel() {
+    return ExpansionPanelList(
+      expansionCallback: (int index, bool isExpanded) {
+        setState(() {
+          _data[index].isExpanded = isExpanded;
+        });
+      },
+      children: _data.map<ExpansionPanel>((Item item) {
+        return ExpansionPanel(
+          headerBuilder: (BuildContext context, bool isExpanded) {
+            return ListTile(
+              title: Text(item.headerValue),
+            );
+          },
+          body: item.expandedValue,
+          isExpanded: item.isExpanded,
+        );
+      }).toList(),
+    );
+  }
+}
+
 class SlurryTable extends StatelessWidget {
   final Iterable<Slurry> slurrys;
-  final Function(int) onCowSelected;
+  final Function(int) onSlurrySelected;
 
   const SlurryTable({
     required this.slurrys,
-    required this.onCowSelected,
+    required this.onSlurrySelected,
     super.key,
   });
 
@@ -98,7 +193,7 @@ class SlurryTable extends StatelessWidget {
         for (final (index, slurry) in slurrys.indexed)
           DataRow(
             onSelectChanged: (selected) {
-              onCowSelected(index);
+              onSlurrySelected(index);
             },
             cells: [
               DataCell(Padding(
@@ -122,11 +217,11 @@ class SlurryTable extends StatelessWidget {
 
 class FieldsTable extends StatelessWidget {
   final Iterable<Field> fields;
-  final Function(int) onCowSelected;
+  final Function(int) onFiedSelected;
 
   const FieldsTable({
     required this.fields,
-    required this.onCowSelected,
+    required this.onFiedSelected,
     super.key,
   });
 
@@ -150,7 +245,7 @@ class FieldsTable extends StatelessWidget {
         for (final (index, field) in fields.indexed)
           DataRow(
             onSelectChanged: (selected) {
-              onCowSelected(index);
+              onFiedSelected(index);
             },
             cells: [
               DataCell(Padding(
