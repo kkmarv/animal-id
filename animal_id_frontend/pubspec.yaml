@@ -29,6 +29,10 @@ flutter:
 
   assets:
     # Add assets from the images directory to the application.
-    - assets/images/calves.png
+    - assets/images/calve.png
+    - assets/images/cow.png
     - assets/images/farm.png
     - assets/images/pigs.png
+    - assets/images/qs.png
+    - assets/images/bio.jpg
+

@@ -25,7 +25,6 @@ class SettingsController with ChangeNotifier {
   /// settings from the service.
   Future<void> loadSettings() async {
     _themeMode = await _settingsService.themeMode();
-
     // Important! Inform listeners a change has occurred.
     notifyListeners();
   }
