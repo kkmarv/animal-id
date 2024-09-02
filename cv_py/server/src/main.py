@@ -1,4 +1,3 @@
-from .services.config import Config
 from .services.Pipe import PipeDirWatcher
 from .services.Vision import BarcodeScanner, TextSearcher
 from threading import Thread
@@ -38,12 +37,10 @@ def dispatch_worker(pipe):
 def setup():
     with open("out", "w") as file:
         file.write("")
-    path_config = Config("paths")
-    os.system(f"rm {path_config['pipes']}/*")
+    os.system(f"rm pipes/*")
 
 def main():
-    path_config = Config("paths")
 
-    watcher = PipeDirWatcher(path_config.get("pipes")).register_callback(dispatch_worker)
+    watcher = PipeDirWatcher("pipes/").register_callback(dispatch_worker)
     log("running watcher")
     watcher.run()
