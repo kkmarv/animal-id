@@ -1,4 +1,3 @@
-
 import 'package:animal_id_frontend/src/screens/farm_detail_view.dart';
 import 'package:flutter/material.dart';
 
@@ -38,12 +37,19 @@ class SplashScreen extends StatelessWidget {
             bottom: 16,
             child: ElevatedButton(
               onPressed: () {
-                Navigator.restorablePushNamed(context, FarmDetailView.routeName);
+                Navigator.restorablePushNamed(
+                    context, FarmDetailView.routeName);
               },
-              child: Text('Hofübersicht'),
+              child: Text(
+                'Hofübersicht',
+                style: TextStyle(
+                  fontSize: 20, // Größere Schriftgröße
+                  color: Colors.black, // Schwarze Schriftfarbe
+                ),
+              ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey[600],
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                backgroundColor: Colors.grey[300], // Hellere Hintergrundfarbe
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               ),
             ),
           ),
@@ -51,15 +57,21 @@ class SplashScreen extends StatelessWidget {
             right: 16,
             bottom: 16,
             child: ElevatedButton(
-                onPressed: () {
-                  // Funktionalität für "Hof anlegen" Button
-                },
-                child: Text('Hof anlegen'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                  Colors.green, // Changed from primary to backgroundColor
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                )),
+              onPressed: () {
+                // Funktionalität für "Hof anlegen" Button
+              },
+              child: Text(
+                'Hof anlegen',
+                style: TextStyle(
+                  fontSize: 20, // Größere Schriftgröße
+                  color: Colors.white, // Weiße Schriftfarbe
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green, // Hintergrundfarbe Grün
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+            ),
           ),
         ],
       ),

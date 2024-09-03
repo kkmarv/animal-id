@@ -1,7 +1,11 @@
 import 'dart:io';
-
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import '../cows_service.dart';
 import '../settings/settings_view.dart';
 
 class FarmDetailView extends StatelessWidget {
@@ -25,6 +29,12 @@ class FarmDetailView extends StatelessWidget {
               Navigator.restorablePushNamed(context, SettingsView.routeName);
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              CowsService.of(context)!.fetch();
+            },
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -44,40 +54,8 @@ class FarmDetailView extends StatelessWidget {
                 },
               ),
             ),
-            ExpansionPanelListExample(),
-        
-        /*
-            ExpansionPanelList(
-              expansionCallback: (int index, bool isExpanded) {
-        
-              },
-              children: [
-                ExpansionPanel(
-                    headerBuilder: (context, isExpanded) {
-                      return Text("Body");
-                    },
-                    body: CowTable(
-                      cows: cows,
-                      onCowSelected: (cowId) {},
-                    )),
-                ExpansionPanel(
-                    headerBuilder: (context, isExpanded) {
-                      return Text("Body");
-                    },
-                    body: SlurryTable(
-                      slurrys: slurrys,
-                      onCowSelected: (e) {},
-                    )),
-                ExpansionPanel(
-                    headerBuilder: (context, isExpanded) {
-                      return Text("Body");
-                    },
-                    body: FieldsTable(
-                      fields: [ ],
-                      onCowSelected: (cowId) {},
-                    ))
-              ],
-            ),*/
+            ExpansionPanelListExample(cowsService: CowsService.of(context)!),
+            SizedBox(height: 150)
           ],
         ),
       ),
@@ -98,7 +76,8 @@ class Item {
   bool isExpanded;
 }
 
-List<Item> generateItems(int numberOfItems) {
+List<Item> generateItems(
+    {required int numberOfItems, required CowsService cowsService}) {
   return List<Item>.generate(numberOfItems, (int index) {
     return Item(
       headerValue: switch (index) {
@@ -108,10 +87,14 @@ List<Item> generateItems(int numberOfItems) {
         _ => "Bestandsregister"
       },
       expandedValue: switch (index) {
-        0 => CowTable(
-            cows: cows,
-            onCowSelected: (cowId) {},
-          ),
+        0 => StreamBuilder(
+            stream: cowsService.cowsSubject,
+            builder: (context, snapshot) {
+              return CowTable(
+                cows: cowsService.cows,
+                onCowSelected: (cowId) {},
+              );
+            }),
         1 => SlurryTable(
             slurrys: slurrys,
             onSlurrySelected: (e) {},
@@ -120,17 +103,23 @@ List<Item> generateItems(int numberOfItems) {
             fields: fields,
             onFiedSelected: (fieldId) {},
           ),
-        _ => CowTable(
-            cows: cows,
-            onCowSelected: (cowId) {},
-          )
+        _ => StreamBuilder(
+            stream: cowsService.cowsSubject,
+            builder: (context, snapshot) {
+              return CowTable(
+                cows: cowsService.cows,
+                onCowSelected: (cowId) {},
+              );
+            })
       },
     );
   });
 }
 
 class ExpansionPanelListExample extends StatefulWidget {
-  const ExpansionPanelListExample({super.key});
+  ExpansionPanelListExample({super.key, required CowsService cowsService})
+      : _data = generateItems(cowsService: cowsService, numberOfItems: 3);
+  final List<Item> _data;
 
   @override
   State<ExpansionPanelListExample> createState() =>
@@ -138,8 +127,6 @@ class ExpansionPanelListExample extends StatefulWidget {
 }
 
 class _ExpansionPanelListExampleState extends State<ExpansionPanelListExample> {
-  final List<Item> _data = generateItems(3);
-
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -153,10 +140,10 @@ class _ExpansionPanelListExampleState extends State<ExpansionPanelListExample> {
     return ExpansionPanelList(
       expansionCallback: (int index, bool isExpanded) {
         setState(() {
-          _data[index].isExpanded = isExpanded;
+          widget._data[index].isExpanded = isExpanded;
         });
       },
-      children: _data.map<ExpansionPanel>((Item item) {
+      children: widget._data.map<ExpansionPanel>((Item item) {
         return ExpansionPanel(
           headerBuilder: (BuildContext context, bool isExpanded) {
             return ListTile(
@@ -276,13 +263,13 @@ class FieldsTable extends StatelessWidget {
 }
 
 class CowTable extends StatelessWidget {
-  final Iterable<Cow> cows;
   final Function(int) onCowSelected;
+  final Iterable<Cow> cows;
 
   const CowTable({
-    required this.cows,
     required this.onCowSelected,
     super.key,
+    required this.cows,
   });
 
   @override
@@ -322,7 +309,7 @@ class CowTable extends StatelessWidget {
               DataCell(Text(cow.gender)),
               DataCell(Text(cow.fatherId)),
               DataCell(Text(cow.motherId)),
-              DataCell(Text(cow.sbtOrRbt)),
+              DataCell(Text(cow.race)),
               DataCell(Text(cow.birthDate.toLocal().toShortDateString())),
               DataCell(Text(cow.departureDate != null
                   ? cow.departureDate!.toLocal().toShortDateString()
@@ -336,9 +323,21 @@ class CowTable extends StatelessWidget {
 
 // Methode zur Bestimmung des Typs
 String _getCowType(DateTime birthDate) {
+  if (_isCalve(birthDate)) {
+    return 'calve';
+  } else {
+    return 'cow';
+  }
+}
+
+bool _isCalve(DateTime birthDate) {
   final now = DateTime.now();
   final age = now.difference(birthDate).inDays / 365; // Alter in Jahren
-  return age < 1 ? 'calve' : 'cow';
+  if (age < 1) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 class BetriebCard extends StatelessWidget {
@@ -488,33 +487,203 @@ class Cow {
   final String gender; // 'Männlich' or 'Weiblich'
   final String fatherId;
   final String motherId;
-  final String sbtOrRbt; // 'SBT' or 'RBT'
+  final String race; // 'SBT'
+  int get raceAsNum => switch (race) {
+        "SBT" => 1,
+        "RBT" => 2,
+        "JER" => 3,
+        "BV" => 4,
+        "RVA" => 5,
+        "RV" => 6,
+        "RDN" => 9,
+        "DSN" => 10,
+        "FL" => 11,
+        "GV" => 12,
+        "PIN" => 13,
+        "HIN" => 14,
+        "MW" => 15,
+        "VW" => 16,
+        "LMP" => 17,
+        "BVA" => 18,
+        "AS" => 19,
+        "VR" => 20,
+        "CHA" => 21,
+        "LIM" => 22,
+        "WBB" => 23,
+        "BA" => 24,
+        "MA" => 25,
+        "SAL" => 26,
+        "MON" => 27,
+        "AU" => 28,
+        "PIE" => 31,
+        "CHI" => 32,
+        "ROM" => 33,
+        "MAR" => 34,
+        "WP" => 35,
+        "BBL" => 36,
+        "DA" => 41,
+        "AA" => 42,
+        "HE" => 43,
+        "SH" => 44,
+        "HLD" => 45,
+        "WB" => 46,
+        "GAL" => 47,
+        "LR" => 48,
+        "BGA" => 49,
+        "LG" => 50,
+        "BRA" => 51,
+        "NOR" => 52,
+        "UST" => 53,
+        "ZEB" => 54,
+        "GRV" => 55,
+        "DEX" => 56,
+        "WGA" => 57,
+        "LH" => 58,
+        "SD" => 59,
+        "FR" => 60,
+        "TUX" => 61,
+        "TLM" => 65,
+        "FLF" => 66,
+        "UCK" => 67,
+        "BLA" => 68,
+        "WIT" => 69,
+        "LAK" => 70,
+        "RHV" => 71,
+        "AT" => 72,
+        "GR" => 73,
+        "PIF" => 74,
+        "PS" => 75,
+        "GVF" => 76,
+        "BVF" => 77,
+        "RBF" => 78,
+        "HWF" => 79,
+        "MWF" => 80,
+        "VWF" => 81,
+        "LPF" => 82,
+        "BRN" => 83,
+        "BAZ" => 84,
+        "AO" => 85,
+        "BE" => 86,
+        "WL" => 87,
+        "BIS" => 88,
+        "YAK" => 89,
+        "SON" => 90,
+        "TAU" => 91,
+        "IND" => 92,
+        "TIN" => 93,
+        "WAG" => 94,
+        "XFF" => 97,
+        "XFM" => 98,
+        "XMM" => 99,
+        "EVO" => 100,
+        "BLH" => 101,
+        "TLH" => 102,
+        "MGR" => 103,
+        "WSH" => 104,
+        "MUR" => 105,
+        "EBS" => 106,
+        "ERI" => 107,
+        "PAR" => 108,
+        "XZF" => 109,
+        "XZM" => 110,
+        "XZZ" => 111,
+        _ => 0
+      };
+
+  // or 'RBT'
   final DateTime birthDate;
   final DateTime?
       departureDate; // Optional, as not all cows may have a departure date
+
+  final String multipleBirth;
 
   Cow({
     required this.id,
     required this.gender,
     required this.fatherId,
     required this.motherId,
-    required this.sbtOrRbt,
+    required this.race,
     required this.birthDate,
+    required this.multipleBirth,
     this.departureDate,
   });
+
+  int get genderAsNum => switch (gender.toLowerCase()) {
+        "männlich" => 1,
+        "weiblich" => 2,
+        _ => 0
+      };
+
+  int get multipleBirthAsNum => switch (multipleBirth) {
+        "Einling" => 1,
+        "Zwilling" => 2,
+        "Drilling" => 3,
+        "Vierling" => 4,
+        _ => 0
+      };
 }
 
 final List<Slurry> slurrys = [
-  Slurry(meldedatum: "03.08.2024", abgeber: "Güllehandel Nord", melder: "Musterhof", menge: "155", art: "Gärrest aus Biogasanlage"),
-  Slurry(meldedatum: "15.04.2024", abgeber: "Landwirt Karl-Heinz", melder: "Musterhof", menge: "50", art: "Hühnertrockenkot"),
-  Slurry(meldedatum: "20.05.2024", abgeber: "Bauer Rudolf", melder: "Musterhof", menge: "50", art: "Milchviehgülle"),
-  Slurry(meldedatum: "20.05.2024", abgeber: "Schweine GbR Schleswig", melder: "Musterhof", menge: "90", art: "Schweinegülle"),
-  Slurry(meldedatum: "20.05.2024", abgeber: "Landwirt Alfred", melder: "Landwirt Müller", menge: "500", art: "Gärrest aus Biogasanlage"),
-  Slurry(meldedatum: "21.05.2024", abgeber: "Kälberzucht Nordrhein", melder: "Musterhof", menge: "100", art: "Kälbergülle"),
-  Slurry(meldedatum: "30.08.2024", abgeber: "Kuhparadies Berlin", melder: "Landwirt Müller", menge: "50", art: "Milchviehgülle"),
-  Slurry(meldedatum: "30.08.2024", abgeber: "Bio-Puten Musterhof", melder: "Musterhof", menge: "234,50", art: "Putenmist"),
-  Slurry(meldedatum: "03.09.2024", abgeber: "Sabine Müller", melder: "Landwirt Müller", menge: "25", art: "Gärrest aus Biogasanlage"),
-  Slurry(meldedatum: "03.09.2024", abgeber: "Landwirtschaft GmbH", melder: "Musterhof", menge: "30", art: "Rindermist"),
+  Slurry(
+      meldedatum: "03.08.2024",
+      abgeber: "Güllehandel Nord",
+      melder: "Musterhof",
+      menge: "155",
+      art: "Gärrest aus Biogasanlage"),
+  Slurry(
+      meldedatum: "15.04.2024",
+      abgeber: "Landwirt Karl-Heinz",
+      melder: "Musterhof",
+      menge: "50",
+      art: "Hühnertrockenkot"),
+  Slurry(
+      meldedatum: "20.05.2024",
+      abgeber: "Bauer Rudolf",
+      melder: "Musterhof",
+      menge: "50",
+      art: "Milchviehgülle"),
+  Slurry(
+      meldedatum: "20.05.2024",
+      abgeber: "Schweine GbR Schleswig",
+      melder: "Musterhof",
+      menge: "90",
+      art: "Schweinegülle"),
+  Slurry(
+      meldedatum: "20.05.2024",
+      abgeber: "Landwirt Alfred",
+      melder: "Landwirt Müller",
+      menge: "500",
+      art: "Gärrest aus Biogasanlage"),
+  Slurry(
+      meldedatum: "21.05.2024",
+      abgeber: "Kälberzucht Nordrhein",
+      melder: "Musterhof",
+      menge: "100",
+      art: "Kälbergülle"),
+  Slurry(
+      meldedatum: "30.08.2024",
+      abgeber: "Kuhparadies Berlin",
+      melder: "Landwirt Müller",
+      menge: "50",
+      art: "Milchviehgülle"),
+  Slurry(
+      meldedatum: "30.08.2024",
+      abgeber: "Bio-Puten Musterhof",
+      melder: "Musterhof",
+      menge: "234,50",
+      art: "Putenmist"),
+  Slurry(
+      meldedatum: "03.09.2024",
+      abgeber: "Sabine Müller",
+      melder: "Landwirt Müller",
+      menge: "25",
+      art: "Gärrest aus Biogasanlage"),
+  Slurry(
+      meldedatum: "03.09.2024",
+      abgeber: "Landwirtschaft GmbH",
+      melder: "Musterhof",
+      menge: "30",
+      art: "Rindermist"),
 ];
 
 final List<Field> fields = [
@@ -590,6 +759,8 @@ final List<Field> fields = [
       kultur: "115 - Winterweichweizen"),
 ];
 
+/*
+//BehaviorSubject cowsChanged = BehaviorSubject();
 final List<Cow> cows = [
   Cow(
     id: 'DE 05 385 85496',
@@ -683,7 +854,7 @@ final List<Cow> cows = [
   ),
   // Weitere Rinder hinzufügen...
 ];
-
+*/
 extension DateUtils on DateTime {
   String toShortDateString() {
     return '${this.day}/${this.month}/${this.year}';
@@ -726,14 +897,19 @@ void _showDialog(BuildContext context) {
 }
 
 void _showCowTableDialog(BuildContext context,
-    {required Function(int) onCowSelected}) {
+    {required Iterable<Cow> cows, required Function(int) onCowSelected}) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return Dialog(
-        child: CowTable(
-          cows: cows,
-          onCowSelected: onCowSelected,
+        child: SingleChildScrollView(
+          child: CowTable(
+            cows: cows,
+            onCowSelected: (index) {
+              onCowSelected(index);
+              Navigator.of(context).pop();
+            },
+          ),
         ),
       );
     },
@@ -767,6 +943,7 @@ class _AnimalFormState extends State<AnimalForm> {
   String? gender;
   DateTime? birthDate;
   final TextEditingController _motherEarTagController = TextEditingController();
+  final TextEditingController _fatherEarTagController = TextEditingController();
 
   String? race;
   String? multipleBirth;
@@ -912,11 +1089,17 @@ class _AnimalFormState extends State<AnimalForm> {
                           child: Image(
                               image: AssetImage('assets/images/cow.png'))),
                       onPressed: () async {
+                        final cows = CowsService.of(context)!.cows;
+
+                        var filteredCows = cows.where((cow) =>
+                                cow.gender == "Weiblich" &&
+                                !_isCalve(cow.birthDate)).toList();
                         _showCowTableDialog(context,
+                            cows: filteredCows,
                             onCowSelected: (int selectedIndex) {
                           setState(() {
                             _motherEarTagController.text =
-                                cows[selectedIndex].id.toString();
+                                filteredCows[selectedIndex].id.toString();
                           });
                         });
                       },
@@ -924,7 +1107,48 @@ class _AnimalFormState extends State<AnimalForm> {
                   ),
                 ],
               ),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: TextFormField(
+                      controller: _fatherEarTagController,
+                      decoration:
+                          InputDecoration(labelText: 'Ohrmarke des Vaters'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Bitte die Ohrmarke ded Vaters eingeben';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    flex: 0,
+                    child: IconButton(
+                      icon: SizedBox(
+                          width: 50,
+                          child: Image(
+                              image: AssetImage('assets/images/cow.png'))),
+                      onPressed: () async {
+                        final cows = CowsService.of(context)!.cows;
 
+                        var filteredCows = cows.where((cow) =>
+                                cow.gender == "Männlich" &&
+                                !_isCalve(cow.birthDate)).toList();
+                        _showCowTableDialog(context,
+                            cows: filteredCows,
+                            onCowSelected: (int selectedIndex) {
+                          setState(() {
+                            _fatherEarTagController.text =
+                                filteredCows[selectedIndex].id.toString();
+                          });
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
               // Rasse Dropdown
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(labelText: 'Rasse'),
@@ -986,14 +1210,101 @@ class _AnimalFormState extends State<AnimalForm> {
                         'Ohrmarke der Mutter: ${_motherEarTagController.text}');
                     print('Rasse: $race');
                     print('Mehrling: $multipleBirth');
+
+                    var cow = Cow(
+                        id: _barcodeController.text,
+                        gender: gender!,
+                        fatherId: _motherEarTagController.text,
+                        motherId: _motherEarTagController.text,
+                        race: race!,
+                        birthDate: birthDate!,
+                        multipleBirth: multipleBirth!);
+
+                    sendPostRequest(cow: cow, context: context);
                   }
                 },
-                child: cows.add(Cow(id: id, gender: gender, fatherId: fatherId, motherId: motherId, sbtOrRbt: sbtOrRbt, birthDate: birthDate)) Text('Erfassen'),
+                child: Text('Erfassen'),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+}
+
+Future<void> sendPostRequest(
+    {required Cow cow, required BuildContext context}) async {
+  // URL für die POST-Anfrage
+  final url = Uri.parse(
+      'https://www1.hi-tier.de/HitTest3/api/hit/Geburt?betriebe=010000000001&action=I');
+
+  // Basic Auth-Daten
+  final username = '010000000001';
+  final password = 'Aaaa\$900001';
+
+  // Authentifizierungs-Header erstellen
+  String basicAuth =
+      'Basic ' + base64Encode(utf8.encode('$username:$password'));
+
+  // Body der POST-Anfrage
+  final body = jsonEncode({
+    "BNR15": "010000000001",
+    "LOM": cow.id,
+    "RASSE": cow.raceAsNum,
+    "GESCHL_R": cow.genderAsNum,
+    "MEHRLING": 0,
+    "GEB_DATR": DateFormat("dd.MM.yyyy").format(cow.birthDate),
+    "LOM_MUT": cow.motherId,
+    "RASSE2": 1
+  });
+
+  // POST-Anfrage senden
+  try {
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': basicAuth,
+      },
+      body: body,
+    );
+
+    // Antwort prüfen
+    if (response.statusCode == 200) {
+      print('Request successful');
+      var responseJson = jsonDecode(response.body);
+      var errorList = responseJson["Fehlerliste"] as List;
+      errorList.map((message) => message["Message"]).toList();
+
+      print(errorList);
+
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: const Text(''),
+                content: SingleChildScrollView(
+                  child: ListBody(
+                    children:
+                      errorList.map((m) => Text(m.toString())).toList(),
+                  ),
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text('Approve'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ));
+      // Future.delayed(Durations.extralong1);
+      await CowsService.of(context)!.fetch();
+    } else {
+      print('Request failed with status: ${response.statusCode}');
+      print('Response: ${response.body}');
+    }
+  } catch (e) {
+    print('Error occurred: $e');
   }
 }
