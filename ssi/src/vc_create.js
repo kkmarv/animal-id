@@ -8,7 +8,7 @@ import {
   JwsSignatureOptions,
   JwtCredentialValidationOptions,
   JwtCredentialValidator
-} from "@iota/identity-wasm/node"
+} from "@iota/identity-wasm/node/index.js"
 import { createDid } from "./util.js"
 import { wallet } from './wallet.js'
 

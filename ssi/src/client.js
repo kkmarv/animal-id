@@ -1,7 +1,7 @@
 import {
   IotaIdentityClient
-} from "@iota/identity-wasm/node"
-import { Client } from "@iota/sdk-wasm/node"
+} from "@iota/identity-wasm/node/index.js"
+import { Client } from "@iota/sdk-wasm/node/lib/index.js"
 import { API_ENDPOINT } from "./util.js"
 
 

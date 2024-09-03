@@ -3,11 +3,11 @@ import {
   JwkMemStore,
   JwsAlgorithm,
   MethodScope
-} from "@iota/identity-wasm/node"
+} from "@iota/identity-wasm/node/index.js"
 import {
   SecretManager,
   Utils
-} from "@iota/sdk-wasm/node"
+} from "@iota/sdk-wasm/node/lib/index.js"
 import { client, didClient } from "./client.js"
 
 export const API_ENDPOINT = "https://api.testnet.shimmer.network"

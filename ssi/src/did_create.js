@@ -6,8 +6,8 @@ import {
   JwkMemStore,
   JwsAlgorithm,
   MethodScope
-} from "@iota/identity-wasm/node"
-import { SecretManager, Utils } from "@iota/sdk-wasm/node"
+} from "@iota/identity-wasm/node/index.js"
+import { SecretManager, Utils } from "@iota/sdk-wasm/node/lib/index.js"
 import { didClient } from "./client.js"
 import { ensureAddressHasFunds } from "./util.js"
 

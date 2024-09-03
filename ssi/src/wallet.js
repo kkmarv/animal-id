@@ -1,5 +1,5 @@
-import { JwkMemStore, KeyIdMemStore, Storage } from "@iota/identity-wasm/node"
-import { Utils } from '@iota/sdk-wasm/node'
+import { JwkMemStore, KeyIdMemStore, Storage } from "@iota/identity-wasm/node/index.js"
+import { Utils } from '@iota/sdk-wasm/node/lib/index.js'
 
 export const wallet = new Storage(new JwkMemStore(), new KeyIdMemStore())
 
