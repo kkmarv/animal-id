@@ -194,7 +194,7 @@ class SlurryTable extends StatelessWidget {
                 padding: const EdgeInsets.all(2.0),
                 child: SizedBox(
                   width: 50,
-                  child: Image(image: AssetImage('assets/images/cow.png')),
+                  child: SizedBox.shrink(),
                 ),
               )),
               DataCell(Text(slurry.meldedatum)),
@@ -246,7 +246,7 @@ class FieldsTable extends StatelessWidget {
                 padding: const EdgeInsets.all(2.0),
                 child: SizedBox(
                   width: 50,
-                  child: Image(image: AssetImage('assets/images/cow.png')),
+                  child: SizedBox.shrink(),
                 ),
               )),
               DataCell(Text(field.feldblock)),
@@ -981,7 +981,7 @@ class _AnimalFormState extends State<AnimalForm> {
                         controller: _barcodeController,
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
-                          hintText: 'Geben Sie eine Zahl ein',
+                          hintText: 'Geben Sie eine Ohrmarke ein',
                           border: OutlineInputBorder(),
                         ),
                       ),
@@ -1200,7 +1200,7 @@ class _AnimalFormState extends State<AnimalForm> {
               SizedBox(height: 20),
 
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     print('Formular ist gültig');
                     print('Geschlecht: $gender');
@@ -1220,7 +1220,92 @@ class _AnimalFormState extends State<AnimalForm> {
                         birthDate: birthDate!,
                         multipleBirth: multipleBirth!);
 
-                    sendPostRequest(cow: cow, context: context);
+                    final success = await sendPostRequest(cow: cow, context: context);
+
+
+                    Future<Map?> verifyCredential() async {
+                      try {
+                        // Erster POST-Request an /create_identity
+                        final identityResponse = await http.post(
+                          Uri.parse('http://localhost:3001/create_identity'),
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                        );
+
+                        if (identityResponse.statusCode == 200) {
+                          // JSON-Antwort aus dem ersten Request
+                          final identityJson = jsonDecode(identityResponse.body);
+                          print('Identity Response: $identityJson');
+                          showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Kalb ID zur Verifizierung erstellt'),
+                                content: SingleChildScrollView(
+                                  child: Text(identityJson?.toString() ?? "") ,
+                                ),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: const Text('Approve'),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
+                              ));
+
+                          // Zweiter POST-Request an /create_credential
+                          final credentialResponse = await http.post(
+                            Uri.parse('http://localhost:3001/create_credential'),
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: jsonEncode({
+                              'subject': {"cow": 1}, // Verwendung der JSON-Antwort
+                              'did': identityJson,     // Verwendung der gleichen JSON-Antwort für 'did'
+                            }),
+                          );
+
+                          if (credentialResponse.statusCode == 200) {
+                            // JSON-Antwort aus dem zweiten Request
+                            final credentialJson = jsonDecode(credentialResponse.body) as Map;
+                            print('Credential Response: $credentialJson');
+                            return credentialJson;
+                          } else {
+                            print(
+                                'Failed to create credential. Status code: ${credentialResponse.statusCode}');
+                          }
+                        } else {
+                          print(
+                              'Failed to create identity. Status code: ${identityResponse.statusCode}');
+                        }
+                      } catch (e) {
+                        print('Error occurred: $e');
+                      }
+                    }
+                    if(success == true){
+                      final credentialJson = await verifyCredential();
+
+                      showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Kalb zertifiziert!'),
+                            content: SingleChildScrollView(
+                              child: Text(credentialJson?.toString() ?? "") ,
+                            ),
+                            actions: <Widget>[
+                              TextButton(
+                                child: const Text('Approve'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          ));
+                    }
+
+
+
                   }
                 },
                 child: Text('Erfassen'),
@@ -1233,7 +1318,7 @@ class _AnimalFormState extends State<AnimalForm> {
   }
 }
 
-Future<void> sendPostRequest(
+Future<bool?> sendPostRequest(
     {required Cow cow, required BuildContext context}) async {
   // URL für die POST-Anfrage
   final url = Uri.parse(
@@ -1275,7 +1360,7 @@ Future<void> sendPostRequest(
       print('Request successful');
       var responseJson = jsonDecode(response.body);
       var errorList = responseJson["Fehlerliste"] as List;
-      errorList.map((message) => message["Message"]).toList();
+      final messages = errorList.map((message) => message["Message"]).toList();
 
       print(errorList);
 
@@ -1286,7 +1371,7 @@ Future<void> sendPostRequest(
                 content: SingleChildScrollView(
                   child: ListBody(
                     children:
-                      errorList.map((m) => Text(m.toString())).toList(),
+                    messages.map((m) => Text(m.toString())).toList(),
                   ),
                 ),
                 actions: <Widget>[
@@ -1300,6 +1385,12 @@ Future<void> sendPostRequest(
               ));
       // Future.delayed(Durations.extralong1);
       await CowsService.of(context)!.fetch();
+
+      if(errorList[0]?["Message"] == "Die Meldung wurde abgespeichert."){
+        return true;
+      }
+
+
     } else {
       print('Request failed with status: ${response.statusCode}');
       print('Response: ${response.body}');
