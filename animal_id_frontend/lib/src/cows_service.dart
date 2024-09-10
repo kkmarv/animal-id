@@ -60,20 +60,22 @@ class CowsService extends InheritedWidget {
     print(cowsJson);
 
     final cowsJsonList = cowsJson["daten"]["#BESTREG"] as List;
-    var cowsList = cowsJsonList
-        .map((cowJson) => Cow(
-            id: cowJson['LOM_X'],
-            gender: cowJson['GESCHL_R'] == 2
-                ? "Weiblich"
-                : cowJson['GESCHL_R'] == 1
-                    ? "Männlich"
-                    : "",
-            fatherId: "",
-            motherId: cowJson['LOM_MUTX'] ?? "",
-            race: cowJson['RASSE_X'],
-            birthDate: DateFormat("dd.MM.yyyy").parse(cowJson['GEB_DATR']),
-            multipleBirth: "Einling"))
-        .toList();
+    var cowsList = cowsJsonList.map((cowJson) {
+      var germanDateFormat = DateFormat("dd.MM.yyyy");
+      return Cow(
+          id: cowJson['LOM_X'],
+          gender: cowJson['GESCHL_R'] == 2
+              ? "Weiblich"
+              : cowJson['GESCHL_R'] == 1
+                  ? "Männlich"
+                  : "",
+          fatherId: "",
+          motherId: cowJson['LOM_MUTX'] ?? "",
+          race: cowJson['RASSE_X'],
+          birthDate: germanDateFormat.parse(
+              cowJson['GEB_DATR'] ?? germanDateFormat.format(DateTime.now())),
+          multipleBirth: "Einling");
+    }).toList();
 
     cows = cowsList..sort((a, b) => a.birthDate.compareTo(b.birthDate));
     cowsSubject.add(true);

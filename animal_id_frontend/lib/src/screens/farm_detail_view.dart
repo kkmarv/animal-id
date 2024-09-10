@@ -309,7 +309,7 @@ class CowTable extends StatelessWidget {
               DataCell(Text(cow.gender)),
               DataCell(Text(cow.fatherId)),
               DataCell(Text(cow.motherId)),
-              DataCell(Text(cow.race)),
+              DataCell(Text(cow.race ?? "")),
               DataCell(Text(cow.birthDate.toLocal().toShortDateString())),
               DataCell(Text(cow.departureDate != null
                   ? cow.departureDate!.toLocal().toShortDateString()
@@ -487,7 +487,7 @@ class Cow {
   final String gender; // 'Männlich' or 'Weiblich'
   final String fatherId;
   final String motherId;
-  final String race; // 'SBT'
+  final String? race; // 'SBT'
   int get raceAsNum => switch (race) {
         "SBT" => 1,
         "RBT" => 2,
