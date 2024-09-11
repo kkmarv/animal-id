@@ -52,6 +52,8 @@ In the real world, these would reside on completely different hosts. The user wo
 
 ### Start the REST Server
 
+First, you'll need to [download Node.js](https://nodejs.org/en/download/package-manager) v10.8.2.
+
 ```shell
 cd ssi
 npm i
