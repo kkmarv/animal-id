@@ -1,5 +1,8 @@
 // Copyright 2020-2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+// 
+// Changed by kkmarv:
+// - Added mnemonic and wallet parameters to enable re-usability
 
 import {
   IotaDocument,

@@ -1,3 +1,5 @@
+// Example usage of this project's code.
+
 import { createIdentity } from './did_create.js'
 import { resolveIdentity } from './did_resolve.js'
 import { createVC } from './vc_create.js'

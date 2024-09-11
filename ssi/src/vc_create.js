@@ -1,5 +1,11 @@
 // Copyright 2020-2023 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+// 
+// Modified by kkmarv:
+// - Added Stronghold storage import for greater re-usability
+// - Changed some comments to better align the intention of the code
+// - Added some log statements
+// - Changed the type and corresponding fields of the VC to AnimalIDCredential
 
 import {
   Credential,
@@ -12,9 +18,7 @@ import {
 import { createDid } from "./util.js"
 import { wallet } from './wallet.js'
 
-/**
-* This example shows how to create a Verifiable Credential and validate it.
-*/
+
 export async function createVC(subject, holderDocument, mnemonic) {
   // Create an identity for the imaginary issuer with one verification method `key-1`.
   let { document: issuerDocument, fragment: issuerFragment } = await createDid(

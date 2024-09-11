@@ -1,3 +1,11 @@
+// Copyright 2020-2023 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+// 
+// Modified by kkmarv:
+// - Variable Naming
+// - Added openly accessible endpoints in the Shimmer network
+// - Added Tangle client import for greater re-usability
+
 import {
   IotaDocument,
   JwkMemStore,
@@ -12,7 +20,6 @@ import { client, didClient } from "./client.js"
 
 export const API_ENDPOINT = "https://api.testnet.shimmer.network"
 export const FAUCET_ENDPOINT = "https://faucet.testnet.shimmer.network/api/enqueue"
-
 
 
 /** Creates a DID Document and publishes it in a new Alias Output.
