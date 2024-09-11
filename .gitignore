@@ -26,4 +26,9 @@ doc/api/
 .flutter-plugins
 .flutter-plugins-dependencies
 
+# SSI package
 node_modules/
+
+# Barcode Scanner package
+__pycache__
+*.pyi
