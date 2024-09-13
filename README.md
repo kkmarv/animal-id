@@ -32,15 +32,34 @@ To get a working demo, you'll need to:
 
 ## Frontend
 
-TODO short description what it is
+The Frontend is a Flutter Application that connects to the python BarCode Scanner via pipes and with the IOTA REST API and the Hit REST API.
 
 ### Run the App
 
-TODO short list of steps on how to get it running
+After the REST Server is started, run the frontend application either via the command line and the Flutter SDK installed, via Android Studio or Visual Studio Code and the Flutter Plugin, or with a prebuild binary.
+
+#### Run the App via Command Line
+
+run
+
+```
+cd animal_id_frontend
+flutter run -d windows
+```
+
+#### Run with a Prebuild Binary
+
+Download the latest version from the releases section, unzip the archive and start `frontend\animal_id_frontend.exe`
+
+#### Run with Android Studio or Visual Studio Code
+
+Open the Folder `frontend` in Android Studio or Visual Studio Code and run `lib\main.dart` with windows as the target.
 
 ## Barcode Scanner
 
-TODO short description what it is
+The Barcode Scanner is implemented in Python and uses the OpenCV package.
+
+The Python Script is run automatically in the background, when the barcode Scanner Button is clicked in the frontend. 
 
 ## IOTA Wallet & VC Issuer Service
 
@@ -53,6 +72,8 @@ In the real world, these would reside on completely different hosts. The user wo
 ### Start the REST Server
 
 First, you'll need to [download Node.js](https://nodejs.org/en/download/package-manager) v20.17.0.
+
+Second, start the REST Server with the following commands:
 
 ```shell
 cd ssi
